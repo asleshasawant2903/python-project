@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}Screener · Pro Trading Terminal{% endblock %}
+
+{% block content %}
+<div class="page-head">
+    <h1 class="page-title">SIGNAL SCREENER</h1>
+    <p class="page-sub">Filter and rank the scanned universe by signal bias, momentum and trend strength.</p>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <div class="row g-3 align-items-end">
+            <div class="col-6 col-lg-2">
+                <label class="field-label" for="universeSelect">Universe</label>
+                <select id="universeSelect" class="form-select form-select-sm" onchange="loadStocks()">
+                    <option value="nifty50">Nifty 50</option>
+                    <option value="banknifty">Bank Nifty</option>
+                    <option value="finnifty">Fin Nifty</option>
+                    <option value="commodities">Commodities</option>
+                    <option value="giftnifty">Gift Nifty</option>
+                    <option value="all">Everything</option>
+                </select>
+            </div>
+            <div class="col-6 col-lg-2">
+                <label class="field-label" for="sortSelect">Sort by</label>
+                <select id="sortSelect" class="form-select form-select-sm" onchange="render()">
+                    <option value="score">Signal Score</option>
+                    <option value="pct">Daily %</option>
+                    <option value="rsi">RSI</option>
+                    <option value="adx">ADX</option>
+                    <option value="price">Price</option>
+                    <option value="symbol">Symbol A–Z</option>
+                </select>
+            </div>
+            <div class="col-6 col-lg-2">
+                <label class="field-label" for="sortDir">Order</label>
+                <select id="sortDir" class="form-select form-select-sm" onchange="render()">
+                    <option value="desc">High → Low</option>
+                    <option value="asc">Low → High</option>
+                </select>
+            </div>
+            <div class="col-6 col-lg-3">
+                <label class="field-label" for="symbolSearch">Search</label>
+                <input type="text" id="symbolSearch" class="form-control form-control-sm"
+                       placeholder="e.g. RELI" oninput="render()" aria-label="Search symbols">
+            </div>
+            <div class="col-12 col-lg-3 d-flex gap-2 justify-content-lg-end">
+                <button class="pill" onclick="downloadResults()">⬇ Export CSV</button>
+                <button class="pill" onclick="resetAll()">✕ Reset</button>
+            </div>
+        </div>
+
+        <hr style="border-color: var(--border-soft); margin: 16px 0 13px;">
+
+        <div class="filter-group-title">Signal bias</div>
+        <div class="d-flex flex-wrap gap-2" id="biasFilters">
+            <button class="pill active" data-bias="all" onclick="setBias(this)">All</button>
+            <button class="pill" data-bias="strong-bull" onclick="setBias(this)">Strong Bullish</button>
+            <button class="pill" data-bias="bull" onclick="setBias(this)">Bullish</button>
+            <button class="pill" data-bias="neutral" onclick="setBias(this)">Neutral</button>
+            <button class="pill" data-bias="bear" onclick="setBias(this)">Bearish</button>
+            <button class="pill" data-bias="strong-bear" onclick="setBias(this)">Strong Bearish</button>
+        </div>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-head">
+        <h2 class="panel-title">Results <span class="sub" id="resultCount"></span></h2>
+    </div>
+    <div class="panel-body flush">
+        <div class="table-wrap">
+            <table class="master-table">
+                <thead id="screenerHead">
+                    <tr>
+                        <th class="symbol-th" scope="col">Symbol</th>
+                        <th scope="col">Score</th><th scope="col">Big Candle</th><th scope="col">MACD</th>
+                        <th scope="col">DOW</th><th scope="col">EMA</th><th scope="col">Bollinger</th>
+                        <th scope="col">RSI</th><th scope="col">RSI Trend</th><th scope="col">DMI</th>
+                        <th scope="col">ADX</th><th scope="col">ADX Trend</th><th scope="col">Hourly Trend</th>
+                        <th scope="col">Chart</th>
+                    </tr>
+                </thead>
+                <tbody id="screenerBody">
+                    <tr><td colspan="14" class="loading-cell">Loading live scan <span class="spinner-dot"></span><span class="spinner-dot"></span><span class="spinner-dot"></span></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/screener.js') }}"></script>
+{% endblock %}

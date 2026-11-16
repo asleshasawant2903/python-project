@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · Pro Trading Terminal{% endblock %}
+
+{% block content %}
+<div class="page-head">
+    <h1 class="page-title">ULTIMATE PRO TRADING TERMINAL</h1>
+    <p class="page-sub">Live multi-indicator analytics across Nifty 50, Bank Nifty, Fin Nifty, commodities and indices.</p>
+</div>
+
+<div class="index-grid" id="indexGrid">
+    {% for label in ['NIFTY 50', 'BANK NIFTY', 'FIN NIFTY', 'INDIA VIX'] %}
+    <div class="index-card">
+        <div class="index-label">{{ label }}</div>
+        <div class="index-price skeleton" style="height: 24px; width: 78%;"></div>
+        <div class="index-change text-muted">--</div>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="panel">
+    <div class="panel-head">
+        <h2 class="panel-title">Market Pulse <span class="sub">Nifty 50 breadth by signal score</span></h2>
+    </div>
+    <div class="panel-body">
+        <div class="stat-grid" id="pulseGrid">
+            <div class="stat-tile"><div class="stat-label">Bullish</div><div class="stat-value">--</div></div>
+            <div class="stat-tile"><div class="stat-label">Bearish</div><div class="stat-value">--</div></div>
+            <div class="stat-tile"><div class="stat-label">Neutral</div><div class="stat-value">--</div></div>
+            <div class="stat-tile"><div class="stat-label">Top Gainer</div><div class="stat-value">--</div></div>
+            <div class="stat-tile"><div class="stat-label">Top Loser</div><div class="stat-value">--</div></div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-6">
+        <div class="panel h-100">
+            <div class="panel-head">
+                <h2 class="panel-title"><span class="text-success">▲</span> Top Bullish Setups <span class="sub">highest signal score</span></h2>
+            </div>
+            <div class="panel-body flush">
+                <div class="setup-list" id="topBullish">
+                    <div class="loading-cell">Loading <span class="spinner-dot"></span><span class="spinner-dot"></span><span class="spinner-dot"></span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="panel h-100">
+            <div class="panel-head">
+                <h2 class="panel-title"><span class="text-danger">▼</span> Top Bearish Setups <span class="sub">lowest signal score</span></h2>
+            </div>
+            <div class="panel-body flush">
+                <div class="setup-list" id="topBearish">
+                    <div class="loading-cell">Loading <span class="spinner-dot"></span><span class="spinner-dot"></span><span class="spinner-dot"></span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-head">
+        <h2 class="panel-title">My Watchlist</h2>
+        <a href="/watchlist" class="pill">Manage →</a>
+    </div>
+    <div class="panel-body">
+        <div class="wl-grid" id="dashWatchlist">
+            <div class="loading-cell">Loading <span class="spinner-dot"></span><span class="spinner-dot"></span><span class="spinner-dot"></span></div>
+        </div>
+    </div>
+</div>
+
+{% set panels = [
+    ('nifty50',     'nifty',       'Nifty 50 Overview',   true),
+    ('banknifty',   'bankNifty',   'Bank Nifty',          false),
+    ('finnifty',    'finNifty',    'Fin Nifty',           false),
+    ('commodities', 'commodities', 'Commodities (MCX)',   false),
+    ('giftnifty',   'giftNifty',   'Gift Nifty & Indices', false)
+] %}
+
+{% for key, dom, heading, is_open in panels %}
+<div class="panel">
+    <div class="panel-head">
+        <h2 class="panel-title collapse-toggle" onclick="toggleTable('{{ dom }}Wrap', '{{ dom }}Caret')"
+            role="button" tabindex="0" onkeypress="if(event.key==='Enter')toggleTable('{{ dom }}Wrap','{{ dom }}Caret')">
+            <span class="collapse-caret {% if not is_open %}closed{% endif %}" id="{{ dom }}Caret">▼</span>
+            {{ heading }}
+            <span class="sub" id="{{ dom }}Stats"></span>
+        </h2>
+        <div class="d-flex align-items-center gap-2">
+            {% if key == 'nifty50' %}
+            <input type="text" class="form-control form-control-sm" style="max-width:190px"
+                   id="tableSearch" placeholder="Filter symbols…" oninput="filterTable(this.value)"
+                   aria-label="Filter Nifty 50 symbols">
+            {% endif %}
+            <a class="pill" href="/export.csv?type={{ key }}">⬇ CSV</a>
+        </div>
+    </div>
+    <div class="panel-body flush">
+        <div class="table-wrap" id="{{ dom }}Wrap" {% if not is_open %}style="display:none"{% endif %}>
+            <table class="master-table">
+                <thead>
+                    <tr>
+                        <th class="symbol-th">Stock</th>
+                        <th>Big Candle 15M</th><th>MACD 1H</th><th>DOW 15M</th><th>EMA 5M</th>
+                        <th>Bollinger 15M</th><th>RSI 15M</th><th>RSI Trend</th>
+                        <th>DMI 15M</th><th>ADX 15M</th><th>ADX Trend</th><th>Chart</th>
+                    </tr>
+                </thead>
+                <tbody id="{{ dom }}Body">
+                    <tr><td colspan="12" class="loading-cell">Loading market data <span class="spinner-dot"></span><span class="spinner-dot"></span><span class="spinner-dot"></span></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}
